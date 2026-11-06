@@ -18,6 +18,10 @@ let current: { token: string; service: GuideService } | undefined;
 function serviceFor(token: string) {
   // One service per OIDC token (tokens rotate); keeps the per-instance answer cache between requests.
   if (current?.token === token) return current.service;
+  try { // Public identity claims only (issuer, audience, subject) — the token itself is never logged.
+    const claims = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8'));
+    console.info(JSON.stringify({ guide: { oidc: { iss: claims.iss, aud: claims.aud, sub: claims.sub } } }));
+  } catch { /* not a JWT */ }
   const credentials = fromWebToken({ roleArn: env.GUIDE_ROLE_ARN!, webIdentityToken: token, roleSessionName: 'campus-companion-guide', durationSeconds: 900 });
   const model = new BedrockGuideModel(env.GUIDE_MODEL_ID!, env.GUIDE_REGION || 'us-east-1', credentials);
   current = { token, service: new GuideService(model, usage!, env.GUIDE_SALT!) };

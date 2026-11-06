@@ -90,8 +90,9 @@ export class GuideService {
       if (this.cache.size > 200) this.cache.clear();
       this.cache.set(key, { answer, expires: Date.now() + 3_600_000 });
       return answer;
-    } catch {
-      this.log({ ms: Date.now() - started, error: true });
+    } catch (error) {
+      // AWS error names/codes only (e.g. AccessDenied); never messages that could echo request data.
+      this.log({ ms: Date.now() - started, error: error instanceof Error ? error.name : 'unknown', code: (error as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode });
       throw new GuideError(503, 'The Strip guide could not answer right now. Please try again later.');
     } finally { clearTimeout(timer); }
   }
