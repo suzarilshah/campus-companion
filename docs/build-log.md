@@ -2,6 +2,14 @@
 
 This is the lightweight iteration log required by [the engineering loop](engineering-loop.md). Add an entry after each meaningful implementation/verification cycle, without secrets or personally identifying attendee information. Keep the newest entry at the top.
 
+## 2026-11-07 — live AI Strip guide on Vercel (participant request, D-36)
+
+- Built `src/domain/guide.ts` (fact pack from the sourced venues and places, strict JSON parse, refusal), `server/guide.ts` (quotas, Neon counters, cache, fail-closed), `server/vercel-guide.ts` (origin, method, JSON and size checks; OIDC to STS), `scripts/build-vercel.mjs` (Build Output API: static site plus a bundled function, CSP/HSTS), and `GuideChat` on the globe and the hosted planner.
+- Kimi K2.5 grounding eval (local, real model): 16/16. Six on-topic questions answered; seven off-topic or jailbreak prompts refused (coding, trivia, system-prompt request, DAN, restaurant, translation, JSON injection, joke); two missing-data questions (rooms, shuttle times) answered "not available" without inventing anything.
+- Vercel env set (sensitive: `DATABASE_URL`, `GUIDE_SALT`). The participant ran `scripts/setup-guide-aws.sh` (OIDC provider plus a production-only role limited to InvokeModel on Kimi K2.5).
+- Production verified: pages 200 with CSP/HSTS; GET 405; foreign origin 403; a real question answered with place IDs; the off-topic poem refused; the 6th request in 10 minutes returned 429. Neon `guide_usage` holds only bucket and hit counters with hashed visitor IDs. The first requests after IAM creation failed (IAM propagation) and were counted toward the quota by design.
+- Checks: 48 unit, 28 Chromium, typecheck.
+
 ## 2026-11-07 — real AI wired to Kimi K2.5 on Bedrock
 
 - Sign-in: AWS CLI 2.39.5 installed to `~/.local/aws-cli` (signed and notarised pkg, user-level). Ran `aws login --profile campus-companion`; the participant's active console session (root) was used in Chrome.
