@@ -2,9 +2,10 @@ import express from 'express';
 import { attendeeRoutes } from './attendee-routes.ts';
 import { AppError } from './attendee.ts';
 import type { ProgressStore } from './progress.ts';
+import type { AiService } from './ai.ts';
 
 /** Fail closed on DNS rebinding and foreign browser origins before serving anything. */
-export function createLocalApp(port: number, live = false, progress?: ProgressStore) {
+export function createLocalApp(port: number, live = false, progress?: ProgressStore, ai?: AiService) {
   const app = express();
   const authorities = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
   app.disable('x-powered-by');
@@ -40,7 +41,7 @@ export function createLocalApp(port: number, live = false, progress?: ProgressSt
   app.get('/api/health', (_req, res) => {
     res.set('Cache-Control', 'no-store').json(live ? { mode: 'local', attendeeStatus: 'per-browser' } : { mode: 'synthetic', attendeeConnected: false });
   });
-  if (live) app.use(attendeeRoutes(progress));
+  if (live) app.use(attendeeRoutes(progress, ai));
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (error instanceof AppError) {
       if (error.retryAfter) res.set('Retry-After', String(error.retryAfter));

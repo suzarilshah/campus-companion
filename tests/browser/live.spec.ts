@@ -273,7 +273,7 @@ test('planner filters are shareable in the URL, removable as chips, and My sched
   });
   await page.goto('/?format=Workshop');
   await expect(page.getByRole('status').filter({ hasText: '2 live sessions match' })).toBeVisible();
-  await page.getByLabel('Day').selectOption('2026-12-02');
+  await page.locator('.filters').getByLabel('Day').selectOption('2026-12-02');
   await expect(page).toHaveURL(/day=2026-12-02/);
   await expect(page.getByRole('status').filter({ hasText: '1 live sessions match' })).toBeVisible();
   await page.getByRole('button', { name: 'Remove filter Workshop' }).click();
@@ -299,4 +299,37 @@ test('QA regressions: a session with no seats offers a seat re-check, not a doom
   await expect(page.getByText('No seats available right now')).toBeVisible();
   await expect(page.getByRole('button', { name: '+ Add to reservation tray' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Re-check seats' })).toBeVisible();
+});
+
+test('AI concierge shows only catalog sessions with AI-written reasons, and adding a pick only fills the review tray', async ({ page }) => {
+  const sessions = [
+    { id: 'g1', title: 'Synthetic generative AI builders session', venue: 'Wynn', date: '2026-12-01', time: '13:00', minutes: '60', availability: 'available', reservable: true, topics: ['Generative AI'], tracks: [], speakers: [] },
+    { id: 's1', title: 'Synthetic serverless session', venue: 'The Venetian', date: '2026-12-01', time: '09:00', minutes: '60', availability: 'available', reservable: true, topics: ['Serverless'], tracks: [], speakers: [] },
+  ];
+  const writes: string[] = [];
+  let asked: Record<string, unknown> | undefined;
+  await page.route('**/api/attendee/**', async (route) => {
+    const path = new URL(route.request().url()).pathname.replace('/api/attendee/', '');
+    if (path === 'session') return route.fulfill({ json: { connected: true, csrf: 'synthetic-csrf' } });
+    if (path === 'catalog') return route.fulfill({ json: { sessions, expectedCount: 2, refreshedAt: '2026-11-07T00:00:00Z', eventName: 'Synthetic fixture event' } });
+    if (path === 'schedule') return route.fulfill({ json: { favorites: [], reserved: [], personalTime: [] } });
+    writes.push(path);
+    throw new Error(`Unexpected local endpoint: ${path}`);
+  });
+  await page.route('**/api/ai/ask', async (route) => {
+    asked = route.request().postDataJSON();
+    expect(route.request().headers()['x-campus-csrf']).toBe('synthetic-csrf');
+    return route.fulfill({ json: { mode: 'concierge', picks: [{ id: 'g1', reason: 'Hands-on generative AI, matches your interest.' }], note: 'Arrive early.', fallback: false, provider: 'Synthetic model', shortlisted: 2, dropped: 1 } });
+  });
+  await page.goto('/?connection=ready');
+  const panel = page.getByRole('region', { name: 'Plan my day with AI' });
+  await panel.getByRole('textbox').fill('generative ai');
+  await panel.getByRole('button', { name: 'Suggest sessions' }).click();
+  await expect(panel.getByText('Synthetic generative AI builders session')).toBeVisible();
+  await expect(panel.getByText('Hands-on generative AI, matches your interest.')).toBeVisible();
+  await expect(panel.getByText(/1 unverifiable suggestion removed/)).toBeVisible();
+  expect(asked).toEqual({ mode: 'concierge', question: 'generative ai' });
+  await panel.getByRole('button', { name: /Add to reservation tray|reservation tray/i }).first().click();
+  await expect(page.locator('.bk-tray').first()).toContainText('Synthetic generative AI builders session');
+  expect(writes).toEqual([]);
 });

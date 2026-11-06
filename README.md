@@ -7,7 +7,7 @@ Walk a tiny-planet Las Vegas Strip, collect stamps in your event passport, and p
 
 **Why local?** AWS attendee sign-in only redirects back to an app on the attendee's own computer (loopback callback ports 8484–8489). The hosted site therefore never handles AWS tokens or attendee data.
 
-**Status:** in development. Typecheck, 33 unit tests, 26 Chromium tests and an axe WCAG 2.2 AA scan (0 violations on all three pages) pass as of 2026-11-05. Real Builder ID sign-in and attendee writes have not been verified against a live account. The AI concierge has not been implemented. See the [build log](docs/build-log.md) for exactly what was run.
+**Status:** in development. Typecheck, 33 unit tests, 26 Chromium tests and an axe WCAG 2.2 AA scan (0 violations on all three pages) pass as of 2026-11-05. Real Builder ID sign-in and attendee writes have not been verified against a live account. AI suggestions are implemented and tested with a fake model; real Bedrock/SageMaker calls need your AWS configuration. See the [build log](docs/build-log.md) for exactly what was run.
 
 This is an independent project and is not an official AWS app. All artwork is original, and the visual style is inspired by the public re:Invent site without using AWS logos, photography or fonts.
 
@@ -81,6 +81,27 @@ Playwright traces/reports, `.local`, original reference artifacts, `.env*`, buil
 - [API contract and snapshot strategy](docs/api-contract.md)
 - [Map sources, verified API behavior and missing data](docs/map-sources.md)
 - [Repository instructions for future development sessions](AGENTS.md)
+
+## AI suggestions (secure by design)
+
+Four AI features run in the **local app** after you sign in and load your catalog:
+- **Plan my day:** a concierge on the planner.
+- **Fill my free time:** suggestions for gaps in My schedule.
+- **Building guide:** questions answered on the map when you arrive at a building.
+- **Summarise this session:** a summary of one session's abstract.
+
+How they stay safe ([full design](docs/ai-plan.md)):
+- **Grounded.** The local server shortlists your real catalog first, excluding reserved, full and clashing sessions. The model only ranks and explains that shortlist.
+- **Minimal data.** The model sees session metadata and your question with emails, phone numbers and card numbers scrubbed. It never sees Builder ID tokens, cookies or your identity.
+- **Constrained.** The model has no tools. Catalog text is passed as JSON data, the reply must be strict JSON, and every session ID is checked against the shortlist. Links and markup are stripped.
+- **You stay in control.** Suggestions only fill the existing reservation tray or favorite review. Nothing is booked without your confirmation and a GetSchedule check.
+- **Limited.** The local server only accepts AI requests from this app's own page (anti-forgery check). They are limited to 10 per minute with a 20-second timeout and 600 output tokens, and fall back to labelled keyword matches if the model is off or fails.
+
+Configure **Amazon Bedrock** (Converse, optional Guardrail) or an **Amazon SageMaker** real-time endpoint in `.env` (see `.env.example`). With nothing configured, AI stays off.
+
+## SageMaker / Jupyter playbook
+
+[`notebooks/campus-companion-playbook.ipynb`](notebooks/campus-companion-playbook.ipynb) runs in SageMaker Studio or local Jupyter on a **synthetic** catalog. It tours the Events API contract, runs the same shortlist, prompt and validator as the app, and calls your SageMaker endpoint or Bedrock. It also red-teams the defences: prompt injection, invented IDs, PII and malformed output. Without AWS settings it runs offline against an adversarial fake model. To regenerate it, run `uv run --with nbformat python notebooks/build_playbook.py`.
 
 ## Distribution
 

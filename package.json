@@ -20,6 +20,9 @@
     "db:verify": "tsx scripts/verify-neon.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "3.1155.0",
+    "@aws-sdk/client-sagemaker-runtime": "3.1155.0",
+    "@aws-sdk/credential-providers": "3.1155.0",
     "@neon/config": "^1.8.2",
     "@neon/env": "^1.4.7",
     "@neondatabase/serverless": "1.1.0",

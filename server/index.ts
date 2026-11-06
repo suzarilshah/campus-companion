@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { createLocalApp } from './app.ts';
+import { AiService, providerFromEnv } from './ai.ts';
 import { FileBackend, MemoryBackend, NeonBackend, ProgressStore } from './progress.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -19,7 +20,8 @@ for (const file of ['.env.local', '.env']) { try { process.loadEnvFile(resolve(r
 const progressFile = process.env.PROGRESS_FILE ?? resolve(root, '.local/progress.json');
 const progress = new ProgressStore(progressFile === ':memory:' ? new MemoryBackend()
   : process.env.DATABASE_URL ? new NeonBackend(process.env.DATABASE_URL) : new FileBackend(progressFile));
-const app = createLocalApp(port, true, progress);
+const ai = new AiService(providerFromEnv());
+const app = createLocalApp(port, true, progress, ai);
 const server = createServer(app);
 let closeVite: (() => Promise<void>) | undefined;
 
@@ -55,7 +57,7 @@ server.on('error', async (error: NodeJS.ErrnoException) => {
   process.exit(1);
 });
 server.listen(port, '127.0.0.1', () => {
-  console.info(`Campus companion · local browser app\nOpen http://127.0.0.1:${port}\nProgress storage: ${progress.storage}. Live connection is user-initiated. Press Ctrl+C to stop.`);
+  console.info(`Campus companion · local browser app\nOpen http://127.0.0.1:${port}\nProgress storage: ${progress.storage}. AI: ${ai.status.provider}. Live connection is user-initiated. Press Ctrl+C to stop.`);
 });
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, async () => {

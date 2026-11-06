@@ -8,6 +8,7 @@ import { BuildingExplorer } from './components/BuildingExplorer';
 import { AGENDA_URL, VENUE_PAGE_URL, venueIdForName, venues, type VenueId } from './scene/venues';
 import { HOSTED } from './domain/hosted';
 import { HostedNotice } from './components/HostedNotice';
+import { AiPanel } from './components/AiPanel';
 import './map.css';
 import './map-theme.css';
 
@@ -33,6 +34,7 @@ function BuildingSessions({ client, tray, venueId, onExplore }: { client: Attend
   const list = day ? here.filter((session) => session.date === day) : here;
   const shown = expanded ? list : list.slice(0, 8);
   return <>
+    {here.length ? <AiPanel key={venueId} client={client} tray={tray} mode="guide" venueId={venueId} compact /> : null}
     <p className="map-list-label">Sessions in this building · {here.length}</p>
     {days.length > 1 ? <div className="mp-days" role="group" aria-label="Days in this building"><button aria-pressed={!day} onClick={() => setDay(undefined)}>All days</button>{days.map((item) => <button key={item} aria-pressed={day === item} onClick={() => { setDay(item); setExpanded(false); }}>{item.slice(5)} · {here.filter((session) => session.date === item).length}</button>)}</div> : null}
     {list.length ? <>

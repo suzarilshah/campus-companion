@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AttendeeSchedule, LiveCatalog, LiveSession } from './live';
 import type { ProgressView } from './progress';
 import { HOSTED, hostedAward, hostedView } from './hosted';
+import type { AiAnswer, AiRequest } from './ai';
 
 /**
  * One client for the local attendee server, used by both the planning desk and the map so they show the same
@@ -150,7 +151,14 @@ export function useAttendee() {
     call<ProgressView>('/api/progress/award', csrf.current, { key }).then(absorb).catch(() => undefined);
   }, [absorb]);
 
+  /** AI suggestions from the local server. Never writes: picks only feed the existing review flows. */
+  const ask = useCallback(async (request: AiRequest) => {
+    if (HOSTED) throw new LocalError('AI suggestions run in the local app, after you sign in and load your catalog.');
+    return call<AiAnswer>('/api/ai/ask', csrf.current, request);
+  }, []);
+
   return {
+    ask,
     connection, catalog, schedule, scheduleAt, progress, busy, message, error, reason, outcomes, toast,
     setMessage, clearToast: () => setToast([]), clearOutcomes: () => setOutcomes([]),
     load, refreshSchedule, refreshSeats, inspect, favorite, reserve, cancel, connect, disconnect, award,

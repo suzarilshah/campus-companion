@@ -61,6 +61,11 @@ test('attendee routes bind a browser cookie and require matching Origin plus CSR
   const connect = await call('/api/attendee/connect', headers, 'POST');
   assert.equal(new URL(JSON.parse(connect.body).url).origin, 'https://oauth.awsevents.com');
   assert.equal((await call('/api/attendee/schedule', { cookie })).status, 401);
+  // AI endpoint: same Origin + CSRF guard, and it refuses signed-out browsers before any model or catalog call.
+  assert.equal((await call('/api/ai/ask', { cookie }, 'POST')).status, 403);
+  assert.equal((await call('/api/ai/ask', { ...headers, 'x-campus-csrf': 'wrong' }, 'POST')).status, 403);
+  assert.equal((await call('/api/ai/ask', headers, 'POST')).status, 400, 'body without a known mode is rejected');
+  assert.deepEqual(JSON.parse((await call('/api/ai/status', { cookie })).body), { enabled: false, provider: 'off' });
   const callback = await call('/callback?code=synthetic-code&state=wrong', { cookie, 'sec-fetch-site': 'cross-site' });
   assert.equal(callback.status, 303);
   assert.equal(callback.headers.location, '/?connection=failed');

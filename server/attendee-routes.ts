@@ -1,8 +1,9 @@
 import { Router, json, type NextFunction, type Request, type Response } from 'express';
 import { Attendee, AppError, equalSecret, secret } from './attendee.ts';
 import { MemoryBackend, ProgressStore } from './progress.ts';
+import { AiService, readRequest } from './ai.ts';
 
-export function attendeeRoutes(progress = new ProgressStore(new MemoryBackend())) {
+export function attendeeRoutes(progress = new ProgressStore(new MemoryBackend()), ai = new AiService()) {
   const router = Router();
   const sessions = new Map<string, { attendee: Attendee; touched: number }>();
   function context(req: Request, create = false) {
@@ -35,7 +36,7 @@ export function attendeeRoutes(progress = new ProgressStore(new MemoryBackend())
   }
   const confirmed = (req: Request) => Boolean(req.body && req.body.confirmed === true);
 
-  router.use(['/api/attendee', '/api/progress', '/callback', '/logout'], (_req, res, next) => {
+  router.use(['/api/attendee', '/api/progress', '/api/ai', '/callback', '/logout'], (_req, res, next) => {
     res.set('Cache-Control', 'no-store'); next();
   });
   router.get('/api/attendee/session', (req, res) => {
@@ -43,7 +44,7 @@ export function attendeeRoutes(progress = new ProgressStore(new MemoryBackend())
     res.cookie('campus-session', session.id, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 8 * 60 * 60_000 });
     res.json({ connected: session.attendee.connected, csrf: session.attendee.csrf });
   });
-  router.use(['/api/attendee', '/api/progress'], guard, json({ limit: '8kb' }));
+  router.use(['/api/attendee', '/api/progress', '/api/ai'], guard, json({ limit: '8kb' }));
   router.post('/api/attendee/connect', (req, res) => {
     const returnTo = req.body?.returnTo === '/map' || req.body?.returnTo === '/passport' ? req.body.returnTo as '/map' | '/passport' : '/';
     res.json({ url: context(req).attendee.start(`http://${req.headers.host}`, returnTo) });
@@ -92,6 +93,16 @@ export function attendeeRoutes(progress = new ProgressStore(new MemoryBackend())
   router.post('/api/attendee/disconnect', async (req, res) => res.json({ logoutUrl: await context(req).attendee.disconnect(`http://${req.headers.host}`) }));
   router.get('/logout', (_req, res) => res.redirect(303, '/?connection=disconnected'));
 
+  router.get('/api/ai/status', (_req, res) => res.json(ai.status));
+  /** AI suggestions. The shortlist comes from this server's cached catalog and GetSchedule; nothing is written to AWS. */
+  router.post('/api/ai/ask', async (req, res) => {
+    const request = readRequest(req.body);
+    const session = context(req);
+    if (!session.attendee.connected) throw new AppError(401, 'Sign in and load your catalog to use AI suggestions.', undefined, 'signIn');
+    const catalog = await session.attendee.getCatalog();
+    const schedule = request.mode === 'tldr' ? undefined : await session.attendee.schedule();
+    res.json(await ai.ask(session.id, request, catalog.sessions, schedule));
+  });
   const profile = (req: Request) => (context(req).attendee.identity.startsWith('builder:') ? 'builder' : 'guest');
   router.get('/api/progress', async (req, res) => res.json({ ...await progress.view(context(req).attendee.identity), profile: profile(req) }));
   router.post('/api/progress/award', async (req, res) => {
