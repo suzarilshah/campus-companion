@@ -2,6 +2,14 @@
 
 This is the lightweight iteration log required by [the engineering loop](engineering-loop.md). Add an entry after each meaningful implementation/verification cycle, without secrets or personally identifying attendee information. Keep the newest entry at the top.
 
+## 2026-11-07 — published to GitHub and Vercel (participant request, D-33)
+
+- Repo: https://github.com/suzarilshah/campus-companion (public). Hosted preview: https://campus-companion-blond.vercel.app (Vercel team Yayasan Insan Prihatin, Git-connected).
+- Added hosted mode (`src/domain/hosted.ts`, `HostedNotice`, `vercel.json`): it makes no /api calls, shows a sign-in explanation in place of the sign-in buttons, and keeps browser-only exploration EXP with the server's award rules. Fixed Vercel route 404s by removing `cleanUrls`.
+- Pre-publish secret scan of all staged files: no connection strings, API keys or tokens. `.env.example` holds placeholders only.
+- Dependencies: `npm audit fix` plus vite 8.3.1 → 8.3.6; `npm audit` reports 0 vulnerabilities.
+- Checks: typecheck pass; unit 33/33; Chromium 26/26; hosted build previewed locally (walking to Encore granted 70 EXP and stamps, no console errors); production `/`, `/map`, `/passport` return 200 and `/api/*` 404.
+
 ## 2026-11-05 — re:Invent-inspired visual redesign and event passport (participant request, D-32)
 
 - Goal: page chrome that matches the public re:Invent 2026 site, plus a passport page for the event.
