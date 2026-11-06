@@ -88,3 +88,7 @@ Playwright traces/reports, `.local`, original reference artifacts, `.env*`, buil
 - **Attendee mode (local):** a loopback-only Node server holds Builder ID tokens in memory and calls the Events API.
 
 Official API source of truth: [AWS Events OpenAPI](https://api.awsevents.com/v1/openapi.json) and [AWS Events developer guide](https://docs.aws.amazon.com/events/latest/devguide/). AWS requires a registered attendee to sign in **locally** for re:Invent catalog access and personal schedule operations. This project is independent and is not an official AWS event map or registration service.
+
+## License
+
+[MIT](LICENSE) © 2026 Suzaril Shah. AWS, re:Invent and related marks belong to Amazon.com, Inc. or its affiliates; this project is independent and not endorsed by AWS.
