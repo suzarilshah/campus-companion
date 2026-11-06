@@ -7,6 +7,7 @@ import { normalizeVenueName, venueIdForName } from './scene/venues';
 import { HOSTED } from './domain/hosted';
 import { HostedNotice } from './components/HostedNotice';
 import { AiPanel, AiSummary } from './components/AiPanel';
+import { GuideChat } from './components/GuideChat';
 import './live.css';
 
 const ago = (at?: number) => at ? `${Math.max(0, Math.round((Date.now() - at) / 60_000))} min ago` : 'not yet';
@@ -95,7 +96,7 @@ export function LiveCatalog() {
     <ConnectionHelp client={client} returnTo="/" />
     {error && !client.reason ? <p className="error-message" role="alert">{error}</p> : null}
     <p className="live-message" role="status">{busy ? 'Working with AWS… please wait.' : message}</p>
-    {HOSTED ? <HostedNotice /> : null}
+    {HOSTED ? <><HostedNotice /><GuideChat /></> : null}
     {HOSTED ? null : !connection?.connected ? <div className="connect-card"><h2>A personal connection.</h2><p>Sign-in opens the official AWS page in this browser and returns to this computer. After signing in, choose “Load my catalog and schedule” to read your data. Favorites and reservations each require a separate confirmation.</p><button className="primary-button" disabled={!connection || busy} onClick={() => void client.connect('/')}>Sign in with AWS Builder ID ↗</button><p className="fine-print">Requires re:Invent 2026 registration. This does not register you for the event.</p><a href={REGISTRATION_URL} target="_blank" rel="noreferrer">Official event registration ↗</a></div> : <>
       <div className="live-actions"><button className="primary-button" disabled={busy} onClick={() => { setPage(0); setPending(undefined); setSelectedId(undefined); void client.load(Boolean(catalog)); }}>{catalog ? 'Refresh catalog and schedule' : 'Load my catalog and schedule'}</button>{schedule ? <button className="view-switch" disabled={busy} onClick={() => void client.refreshSchedule()}>Refresh my schedule</button> : null}<button className="view-switch" disabled={busy} onClick={() => void client.disconnect().then((url) => { if (url) setLogoutUrl(url); })}>Disconnect this app</button></div>
       <p className="catalog-note"><a href="/map">Open the Strip globe ↗</a> — it shares this connection, schedule and reservation tray.</p>

@@ -3,9 +3,10 @@ import { attendeeRoutes } from './attendee-routes.ts';
 import { AppError } from './attendee.ts';
 import type { ProgressStore } from './progress.ts';
 import type { AiService } from './ai.ts';
+import { GuideError, type GuideService } from './guide.ts';
 
 /** Fail closed on DNS rebinding and foreign browser origins before serving anything. */
-export function createLocalApp(port: number, live = false, progress?: ProgressStore, ai?: AiService) {
+export function createLocalApp(port: number, live = false, progress?: ProgressStore, ai?: AiService, guide?: GuideService) {
   const app = express();
   const authorities = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
   app.disable('x-powered-by');
@@ -40,6 +41,15 @@ export function createLocalApp(port: number, live = false, progress?: ProgressSt
   });
   app.get('/api/health', (_req, res) => {
     res.set('Cache-Control', 'no-store').json(live ? { mode: 'local', attendeeStatus: 'per-browser' } : { mode: 'synthetic', attendeeConnected: false });
+  });
+  // Public Strip guide (same service and quotas as the hosted site; Origin is already checked above).
+  app.post('/api/guide', express.json({ limit: '2kb' }), async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!req.headers.origin) { res.status(403).json({ error: 'Not allowed.' }); return; }
+    if (!guide?.enabled) { res.status(503).json({ error: 'The Strip guide is turned off right now.' }); return; }
+    try { res.json(await guide.ask(req.socket.remoteAddress ?? '', req.body?.question)); } catch (error) {
+      if (error instanceof GuideError) { if (error.retryAfter) res.set('Retry-After', String(error.retryAfter)); res.status(error.status).json({ error: error.message }); } else res.status(500).json({ error: 'Something went wrong.' });
+    }
   });
   if (live) app.use(attendeeRoutes(progress, ai));
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

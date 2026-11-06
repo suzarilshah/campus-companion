@@ -333,3 +333,27 @@ test('AI concierge shows only catalog sessions with AI-written reasons, and addi
   await expect(page.locator('.bk-tray').first()).toContainText('Synthetic generative AI builders session');
   expect(writes).toEqual([]);
 });
+
+test('the Strip guide shows grounded answers with walk-to buttons and explains limits instead of failing silently', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('campus-hint-seen', '1'));
+  let calls = 0;
+  await page.route('**/api/guide', async (route) => {
+    calls++;
+    const { question } = route.request().postDataJSON();
+    if (/python/i.test(question)) return route.fulfill({ json: { refused: true, answer: 'I can only help with Campus Companion: the six re:Invent 2026 venues, the Strip globe, the passport and how to use this site.', places: [] } });
+    if (/again/i.test(question)) return route.fulfill({ status: 429, json: { error: 'You’ve asked a lot of questions. Please wait a little and try again.' } });
+    return route.fulfill({ json: { refused: false, answer: 'The opening keynote is at The Venetian.', places: ['venue-venetian'] } });
+  });
+  await page.goto('/map');
+  const guide = page.getByRole('region', { name: 'Ask the Strip guide' });
+  await guide.getByRole('button', { name: 'Where is the opening keynote?' }).click();
+  await expect(guide.getByText('The opening keynote is at The Venetian.')).toBeVisible();
+  await expect(guide.getByRole('button', { name: 'Walk to The Venetian →' })).toBeVisible();
+  await guide.getByRole('textbox').fill('write python for me');
+  await guide.getByRole('button', { name: 'Ask' }).click();
+  await expect(guide.getByText(/I can only help with Campus Companion/)).toBeVisible();
+  await guide.getByRole('textbox').fill('ask again please');
+  await guide.getByRole('button', { name: 'Ask' }).click();
+  await expect(guide.getByText(/wait a little/)).toBeVisible();
+  expect(calls).toBe(3);
+});

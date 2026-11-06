@@ -26,3 +26,10 @@
 .ai-ghost:hover:not(:disabled){background:#5724ff40}
 .ai-summary ul{margin:6px 0;padding-left:18px;font-size:13px;line-height:1.6;color:#e4dcff}
 .ai-audience{font-size:13px;color:#d5d9e0;margin:4px 0 0}
+.guide-turns{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:10px}
+.guide-q{justify-self:end;margin:0 0 6px auto;max-width:85%;width:fit-content;background:#ffffff1a;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:13px;color:#fff}
+.guide-a{margin:0;background:#0f141acc;border:1px solid #2c3644;border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:14px;line-height:1.55;color:#e4dcff}
+.guide-a span{color:#b9a6ff}.guide-a.refused{color:#d5d9e0;border-style:dashed}
+.guide-places{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.guide-places a,.guide-places button{border:1px solid #4db8ff80;background:#4db8ff14;color:#cfeaff;border-radius:40px;padding:5px 12px;font-size:12px;text-decoration:none}
+.guide-places a:hover,.guide-places button:hover{background:#4db8ff33;color:#fff}

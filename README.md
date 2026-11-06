@@ -2,7 +2,7 @@
 
 Walk a tiny-planet Las Vegas Strip, collect stamps in your event passport, and plan your real re:Invent 2026 week with the AWS Events API.
 
-- **Hosted preview:** [campus-companion-blond.vercel.app](https://campus-companion-blond.vercel.app). It shows the globe, exploration and the passport only, with EXP saved in your browser. It has no sign-in and no sessions.
+- **Hosted preview:** [campus-companion-blond.vercel.app](https://campus-companion-blond.vercel.app). It shows the globe, exploration, the passport and the AI Strip guide, with EXP saved in your browser. It has no sign-in and no sessions.
 - **Full app (local):** run it on your own computer (below) to sign in with your registered AWS Builder ID. Then you can browse the real catalog, favorite sessions, reserve seats, and turn reservations into passport stamps.
 
 **Why local?** AWS attendee sign-in only redirects back to an app on the attendee's own computer (loopback callback ports 8484–8489). The hosted site therefore never handles AWS tokens or attendee data.
@@ -104,6 +104,17 @@ aws login --profile campus-companion --region us-east-1   # AWS CLI 2.32+; appro
 ```
 
 Then add `AI_PROVIDER=bedrock`, `BEDROCK_MODEL_ID=moonshotai.kimi-k2.5`, `AI_AWS_PROFILE=campus-companion` and `AI_AWS_REGION=us-east-1` to `.env.local`, and restart `npm start`. The startup line shows `AI: Amazon Bedrock · …`. `scripts/aws-signin.sh` is a guided alternative for IAM Identity Center (SSO) users.
+
+## Hosted Strip guide (AI on the live site)
+
+The live site has an **Ask the Strip guide** panel, on the globe and on the planner. It runs **Kimi K2.5 on Amazon Bedrock** through one Vercel function (`POST /api/guide`):
+- **Grounded:** it answers only from Campus Companion's sourced facts (the six venues and what each hosts, the illustrated places with their provenance, the passport rules, how to use the site). Anything else gets a fixed refusal.
+- **No catalog:** it cannot see sessions, times or rooms, and says so.
+- **Constrained:** it has no tools and no browsing. The question is passed as JSON data, the reply must be strict JSON, links and markup are stripped, and place IDs are checked against an allow-list.
+- **No keys:** Vercel's per-request OIDC token is exchanged for a role that can only `bedrock:InvokeModel` on `moonshotai.kimi-k2.5` in us-east-1, and only from the production deployment. One-time setup: `bash scripts/setup-guide-aws.sh`.
+- **Bounded cost:** 5 questions per visitor per 10 minutes and 20 per day (keyed on a salted IP hash), 30 per minute and **500 per day site-wide**, 280-character questions, 350 output tokens, and a 15-second timeout. Identical questions are served from a cache. At $0.60/$3.00 per million input/output tokens that is at most about $1.15 a day. Counters live in Neon. If the counter store is down, no model call is made.
+- **Hardened page:** same-origin checks on the function, and a strict Content-Security-Policy, HSTS and frame-blocking headers on every page.
+- **Kill switch:** set `GUIDE_ENABLED=0` in Vercel and redeploy, or run `bash scripts/setup-guide-aws.sh --remove` to cut off AWS access.
 
 ## SageMaker / Jupyter playbook
 

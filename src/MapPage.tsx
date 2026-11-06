@@ -9,6 +9,7 @@ import { AGENDA_URL, VENUE_PAGE_URL, venueIdForName, venues, type VenueId } from
 import { HOSTED } from './domain/hosted';
 import { HostedNotice } from './components/HostedNotice';
 import { AiPanel } from './components/AiPanel';
+import { GuideChat } from './components/GuideChat';
 import './map.css';
 import './map-theme.css';
 
@@ -124,6 +125,7 @@ export function MapPage() {
         {client.error && !client.reason ? <p className="mp-error" role="alert">{client.error}</p> : null}
         <Connect client={client} purpose="Use your real re:Invent schedule here" />
         <nav className="mp-quick" aria-label="Go to a venue"><span>Go to a venue</span>{venues.map((venue, index) => <button key={venue.id} style={{ '--venue': venue.accent } as CSSProperties} onClick={() => goTo(venue.id)}>{index + 1} · {venue.name}</button>)}</nav>
+        <GuideChat onMap compact />
         {catalog ? <>
           <p className="mp-event"><strong>{catalog.eventName}</strong>{catalog.event?.city ? ` · ${catalog.event.city}` : ''}<br />{catalog.event?.startDate ? `${catalog.event.startDate.slice(0, 10)} → ${catalog.event.endDate?.slice(0, 10) ?? '?'}` : 'Event dates not provided'}{catalog.event?.timezone ? ` · ${catalog.event.timezone}` : ''} <span>from GetEvent</span></p>
           <div className="mp-summary" aria-label="Your schedule from GetSchedule"><span><b>{schedule?.reserved.length ?? 0}</b>reserved</span><span><b>{schedule?.favorites.length ?? 0}</b>favorited</span><span><b>{schedule?.personalTime.length ?? 0}</b>personal time</span></div>

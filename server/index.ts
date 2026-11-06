@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { createLocalApp } from './app.ts';
 import { AiService, providerFromEnv } from './ai.ts';
+import { randomBytes } from 'node:crypto';
+import { fromIni } from '@aws-sdk/credential-providers';
+import { GuideService, MemoryUsage } from './guide.ts';
+import { BedrockGuideModel } from './guide-model.ts';
 import { FileBackend, MemoryBackend, NeonBackend, ProgressStore } from './progress.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -21,7 +25,11 @@ const progressFile = process.env.PROGRESS_FILE ?? resolve(root, '.local/progress
 const progress = new ProgressStore(progressFile === ':memory:' ? new MemoryBackend()
   : process.env.DATABASE_URL ? new NeonBackend(process.env.DATABASE_URL) : new FileBackend(progressFile));
 const ai = new AiService(providerFromEnv());
-const app = createLocalApp(port, true, progress, ai);
+// The Strip guide reuses the Bedrock settings of the AI features (local quotas are in memory).
+const guideModel = process.env.AI_PROVIDER === 'bedrock' && process.env.BEDROCK_MODEL_ID
+  ? new BedrockGuideModel(process.env.BEDROCK_MODEL_ID, process.env.AI_AWS_REGION || 'us-east-1', process.env.AI_AWS_PROFILE ? fromIni({ profile: process.env.AI_AWS_PROFILE }) : undefined) : undefined;
+const guide = new GuideService(guideModel, new MemoryUsage(), randomBytes(16).toString('hex'));
+const app = createLocalApp(port, true, progress, ai, guide);
 const server = createServer(app);
 let closeVite: (() => Promise<void>) | undefined;
 
