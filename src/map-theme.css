@@ -1,0 +1,116 @@
+/*
+ * re:Invent-inspired dark skin for the map page: glass panels on near-black navy, pill controls, gradient accents.
+ * Loaded after campus.css, explorer.css and map.css; every rule is scoped under .map-page so it wins without !important.
+ * The 3D world keeps its own colours.
+ */
+.map-page{--glass:#0f141ae6;--glass-2:#161d26f2;--edge:#ffffff1f;--edge-2:#ffffff33;background:var(--ink-0);color:#fff}
+.map-page a{color:var(--blue)}
+
+/* Header */
+.map-page .map-header{background:#0b0f14e6;border-bottom:1px solid var(--edge);color:#fff}
+.map-page .map-brand{color:#fff}.map-page .map-brand strong{color:var(--text-2);font-weight:300}
+.map-page .map-brand .brand-mark{background:var(--grad);color:#fff;font-size:18px;font-weight:800}
+.map-page .map-header-center{color:var(--text-2)}.map-page .map-status-light{background:var(--ok);box-shadow:0 0 0 4px #3ddc9726}
+.map-page .map-nav{display:flex;gap:6px;align-items:center}
+.map-page .map-back,.map-page .map-nav a{background:transparent;color:#fff;border:1.5px solid #ffffff99;border-radius:var(--pill);padding:9px 16px;font-size:13px;font-weight:600;gap:8px;text-decoration:none;white-space:nowrap}
+.map-page .map-back:hover,.map-page .map-nav a:hover{background:#ffffff14;border-color:#fff}
+.map-page .map-nav a.map-nav-primary{background:#fff;color:var(--ink-1);border-color:#fff}
+
+/* Side panel */
+.map-page .map-details{background:var(--glass);border:1px solid var(--edge);color:#fff;box-shadow:0 20px 60px #0009;border-radius:20px}
+.map-page .map-details::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad);border-radius:20px 20px 0 0}
+.map-page .map-details h1{font-size:34px;letter-spacing:-1px}
+.map-page .map-details .eyebrow{color:var(--blue)}
+.map-page .map-panel-intro{font-family:var(--body);font-style:normal;color:var(--text-2);font-size:15px}
+.map-page .map-clear{color:#fff}
+.map-page .map-source-note,.map-page .map-indoor-limit,.map-page .map-empty,.map-page .map-more,.map-page .map-mode-status,.map-page .mp-refresh{color:var(--muted);border-color:var(--edge)}
+.map-page .map-source-note a,.map-page .map-indoor-limit a,.map-page .map-external-link,.map-page .mp-api a,.map-page .mp-connect a{color:var(--blue)}
+.map-page .map-list-label,.map-page .mp-quick span{color:var(--text-2)}
+.map-page .mp-hosts{background:#ffffff0d;border:1px solid var(--edge);color:var(--text-2)}
+.map-page .mp-event{color:var(--text-2)}
+.map-page .mp-summary span{background:#ffffff0d;border:1px solid var(--edge);color:var(--muted)}.map-page .mp-summary b{color:#fff}
+.map-page .mp-search input,.map-page .mp-selects select{background:var(--ink-2);border:1px solid var(--line-strong);color:#fff;border-radius:12px;min-height:40px}
+.map-page .mp-days button{background:transparent;border:1px solid var(--line-strong);color:var(--text-2);border-radius:var(--pill)}
+.map-page .mp-days button[aria-pressed=true]{background:var(--grad);border-color:transparent;color:#fff}
+.map-page .mp-venues button,.map-page .mp-quick button{background:var(--ink-2);border:1px solid var(--edge);border-left:4px solid var(--venue);color:#fff;border-radius:12px}
+.map-page .mp-venues button:hover,.map-page .mp-quick button:hover{background:var(--ink-4)}
+.map-page .mp-venues span{background:#ffffff1f;color:#fff}
+.map-page .is-reserved{background:#ffc35a26;color:var(--warn)}.map-page .is-favorite{background:#ff6b8126;color:#ff9fb0}
+.map-page .map-session-list li,.map-page .mp-session,.map-page .mp-day button{border-top-color:var(--edge);color:#fff}
+.map-page .mp-day button span,.map-page .mp-session-when{color:var(--blue)}
+.map-page .mp-session small,.map-page .mp-day small,.map-page .map-session-list li small,.map-page .mp-session-when em,.map-page .mp-status{color:var(--muted)}
+.map-page .mp-chips span{background:#4db8ff1f;color:#9ad6ff}
+.map-page .mp-link{color:var(--blue)}
+.map-page .mp-confirm{background:#ffc35a14;border:1px solid #ffc35a55;color:#ffe7bd}
+.map-page .mp-confirm button{background:transparent;border:1.5px solid #ffffff80;color:#fff;border-radius:var(--pill)}
+.map-page .mp-confirm .mp-primary,.map-page .mp-primary{background:#fff;color:var(--ink-1);border-radius:var(--pill);font-weight:700;font-size:13px;padding:11px 14px}
+.map-page .mp-connect{border-color:var(--edge);background:#ffffff08}
+.map-page .mp-api{color:var(--text-2)}.map-page .mp-api code{background:var(--ink-4);color:#fff}
+.map-page .mp-error{background:#ff6b811a;border:1px solid #ff6b8166;color:#ffd0d7}
+.map-page .map-data-switch{background:var(--ink-2)}.map-page .map-data-switch button[aria-pressed=true]{background:var(--ink-4);box-shadow:none}
+.map-page .map-panel-action{background:#fff;color:var(--ink-1);border-radius:var(--pill);font-weight:700;padding:12px 16px}
+.map-page .map-panel-action:hover{background:#e9f4ff}
+.map-page .mp-explore{background:var(--grad)!important;color:#fff!important}
+.map-page .sheet-handle{color:#fff}.map-page .sheet-handle span{background:#ffffff59}
+
+/* HUD over the scene */
+.map-page .scene-title .eyebrow{color:#fff;text-shadow:0 1px 8px #0009}
+.map-page .scene-title strong{font-family:var(--display);font-weight:800;color:#fff;text-shadow:0 2px 18px #000a}
+.map-page .scene-title>span:last-child{color:#eef1f6;text-shadow:0 1px 8px #000c}
+.map-page .scene-controls button,.map-page .walk-pad button,.map-page .hud-popover button{background:var(--glass);border:1px solid var(--edge-2);color:#fff;border-radius:var(--pill);box-shadow:0 6px 18px #0006;backdrop-filter:blur(10px)}
+.map-page .scene-controls button:hover,.map-page .walk-pad button:hover,.map-page .hud-popover button:hover{background:var(--ink-4)}
+.map-page .walk-pad button{border-radius:12px}
+.map-page .scene-controls button[aria-pressed=true],.map-page .hud-popover button[aria-pressed=true]{background:var(--grad);border-color:transparent;color:#fff}
+.map-page .hud-popover,.map-page .map-legend,.map-page .pin-legend,.map-page .mini-map{background:var(--glass);border:1px solid var(--edge);color:#fff;box-shadow:0 12px 36px #0008;backdrop-filter:blur(12px)}
+.map-page .hud-popover{border-radius:18px}
+.map-page .mini-map>span,.map-page .mini-map small{color:var(--text-2)}
+.map-page .illustration-label{color:#fff;text-shadow:0 1px 6px #000c}
+.map-page .landmark-label{background:#0f141aeb;color:#fff;border:1px solid var(--edge-2);border-bottom:3px solid var(--venue);border-radius:10px;box-shadow:0 6px 18px #0007}
+.map-page .landmark-label.chosen{background:#fff;color:var(--ink-1);border-color:#fff;border-bottom-color:var(--venue)}
+
+/* EXP badge, passport, hint, postcard — game HUD, re:Invent colours */
+.map-page .exp-hud{background:var(--glass);border:1px solid #7b5cff99;color:#fff;box-shadow:0 8px 26px #0008,0 0 0 4px #5724ff26;backdrop-filter:blur(12px)}
+.map-page .exp-hud:hover{border-color:#fff}
+.map-page .exp-level{background:var(--grad);border:0;color:#fff}
+.map-page .exp-body small{color:var(--text-2)}
+.map-page .exp-bar{background:#ffffff1f;border:0}.map-page .exp-bar i{background:var(--grad)}
+.map-page .passport,.map-page .controls-hint,.map-page .postcard{background:var(--glass-2);border:1px solid var(--edge-2);color:#fff;box-shadow:0 24px 60px #000a;backdrop-filter:blur(14px)}
+.map-page .passport header button,.map-page .passport h3,.map-page .passport h4{color:#fff}
+.map-page .passport-note,.map-page .postcard p{color:var(--text-2)}
+.map-page .passport-quests li{background:#ffffff0d;color:#fff}.map-page .passport-quests li.done{background:#3ddc971f}
+.map-page .passport-quests small{color:var(--muted)}.map-page .passport-quests em{color:var(--warn)}
+.map-page .passport-stamps button{background:transparent;border-color:#ffffff40;color:var(--muted)}
+.map-page .passport-stamps button.done{background:#ffffff0d;border-color:var(--stamp);color:#fff}
+.map-page .passport-full{display:block;margin-top:12px;text-align:center;border-radius:var(--pill);padding:10px;background:#fff;color:var(--ink-1);font-weight:700;font-size:13px;text-decoration:none}
+.map-page .controls-hint kbd{background:var(--ink-4);border-color:#ffffff59;color:#fff}
+.map-page .controls-hint button,.map-page .postcard-action{background:#fff;color:var(--ink-1);border:0;border-radius:var(--pill);box-shadow:none}
+.map-page .postcard-rides button{background:#4db8ff1f;border-color:#4db8ff99;color:#cfeaff}
+
+/* Building explorer */
+.map-page .explorer{background:var(--ink-1);color:#fff;--accent:#7b5cff}
+.map-page .ex-head{background:var(--ink-0);border-bottom-color:var(--edge)}
+.map-page .ex-head h2{font-family:var(--display);font-weight:800}.map-page .ex-head h2 em{color:var(--text-2);font-style:normal;font-weight:300}
+.map-page .ex-eyebrow,.map-page .ex-count,.map-page .ex-note,.map-page .ex-list small,.map-page .ex-steps{color:var(--muted)}
+.map-page .ex-close{background:transparent;border-color:#ffffff66;color:#fff}
+.map-page .ex-side{background:var(--ink-2);border-right-color:var(--edge)}
+.map-page .ex-search input{background:var(--ink-1);border-color:var(--line-strong);color:#fff}
+.map-page .ex-chips button,.map-page .ex-list button,.map-page .ex-step-actions button{background:transparent;border-color:var(--line-strong);color:#fff}
+.map-page .ex-chips button{border-radius:var(--pill)}
+.map-page .ex-chips button[aria-pressed=true],.map-page .ex-floors button[aria-pressed=true],.map-page .ex-step-actions .ex-primary{background:var(--grad);border-color:transparent;color:#fff}
+.map-page .ex-list button{background:var(--ink-3)}
+.map-page .ex-floors,.map-page .ex-legend,.map-page .ex-room{background:var(--glass);border-color:var(--edge);color:var(--text-2)}
+.map-page .ex-floors button{color:#fff}
+.map-page .ex-room button{color:#fff}
+.map-page .ex-step{background:var(--glass-2);border:1px solid #7b5cff99;box-shadow:0 20px 50px #000a;color:#fff}
+.map-page .ex-step p{color:var(--text-2)}.map-page .ex-step strong{font-family:var(--display);font-weight:700}
+.map-page .ex-step-num{border-color:#7b5cff;color:#fff}
+.map-page .ex-steps .now{color:#fff}.map-page .ex-steps .done{color:var(--ok)}
+.map-page .ex-pin-label{background:#fff;color:var(--ink-1);font-weight:700}
+.map-page .scene-unavailable{color:#fff}
+.chunk-error{background:#ff6b811a;border-color:#ff6b8166;color:#ffd0d7}.chunk-error button{background:transparent;border-color:#ffd0d7;color:#fff;border-radius:40px}
+.map-page .campus-stage{background:radial-gradient(80% 80% at 50% 40%,#1b2a4a,var(--ink-0))}
+.map-page .scene-title{background:var(--glass);border:1px solid var(--edge);border-radius:18px;padding:14px 18px;box-shadow:0 12px 36px #0007;backdrop-filter:blur(12px)}
+.map-page .scene-title .eyebrow,.map-page .scene-title strong,.map-page .scene-title>span:last-child{text-shadow:none}
+.map-page .scene-title .eyebrow{color:var(--blue)}
+.map-page .scene-title>span:last-child{color:var(--text-2)}
+.map-page .illustration-label{background:var(--glass);border-radius:var(--pill);padding:3px 10px;text-shadow:none}

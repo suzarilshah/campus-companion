@@ -1,0 +1,34 @@
+.explorer{--accent:#2f4a3c;position:absolute;z-index:30;inset:68px 0 0 0;display:grid;grid-template-columns:300px 1fr;grid-template-rows:auto 1fr;background:#f7f3ea;color:#23332b}
+@media(min-width:951px){.explorer{right:430px;border-right:1px solid #ddd5c4}}
+.ex-head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid #e3dccd;background:#fffdf6}
+.ex-head h2{margin:2px 0 0;font-family:Georgia,serif;font-weight:400;font-size:26px}.ex-head h2 em{font-style:italic;color:#687360}
+.ex-eyebrow{display:block;font-size:11px;letter-spacing:1.2px;font-weight:700;color:#687360}
+.ex-close{border:1px solid #d6cfbf;background:#fff;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
+.ex-side{overflow:auto;padding:16px;border-right:1px solid #e3dccd;background:#fbf8f1}
+.ex-search input{width:100%;padding:11px 12px;border:1.5px solid #cfc7b5;border-radius:10px;font-size:12px;background:#fff}
+.ex-chips{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.ex-chips button{border:1px solid #cfc7b5;background:#fff;border-radius:16px;padding:5px 10px;font-size:11px;cursor:pointer}.ex-chips button[aria-pressed=true]{background:#2f4a3c;color:#fff;border-color:#2f4a3c}
+.ex-count{font-size:11px;color:#687360;margin:6px 0}
+.ex-list{list-style:none;margin:0;padding:0;display:grid;gap:5px}.ex-list button{width:100%;text-align:left;border:1px solid #e3dccd;background:#fff;border-radius:9px;padding:8px 10px;cursor:pointer;font-size:11px;line-height:1.4}.ex-list button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}.ex-list b{display:block;font-weight:600}.ex-list small{color:#687360}
+.ex-note{font-size:12px;line-height:1.6;color:#5f6b58}
+.ex-stage{position:relative;overflow:hidden}.ex-stage canvas{display:block}
+.ex-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px}
+.ex-pin-label{position:absolute;top:0;left:0;pointer-events:none;background:#23213a;color:#fff;font-size:11px;border-radius:14px;padding:4px 10px;white-space:nowrap;visibility:hidden}
+.ex-floors{position:absolute;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px;background:#fffdf6;border:1px solid #ddd5c4;border-radius:14px;padding:7px}
+.ex-floors button{min-width:42px;height:34px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:12px;cursor:pointer}.ex-floors button[aria-pressed=true]{background:#2f4a3c;color:#fff}
+.ex-legend{position:absolute;left:16px;top:12px;max-width:min(560px,70%);font-size:11px;line-height:1.5;color:#6b7563;background:#fffdf6dd;border-radius:8px;padding:6px 9px}.ex-legend a{color:inherit}
+.ex-room{position:absolute;left:16px;top:70px;max-width:340px;background:#fffdf6;border:1px solid #ddd5c4;border-radius:12px;padding:10px 12px;font-size:11px}.ex-room ul{list-style:none;margin:6px 0 0;padding:0}.ex-room button{border:0;background:transparent;text-align:left;padding:4px 0;font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.ex-step{position:absolute;right:86px;bottom:20px;width:320px;background:#fffdf6;border:2px solid #23213a;border-radius:14px;box-shadow:0 6px 0 #23213a33;padding:14px 16px;font-size:12px;line-height:1.5}
+.ex-step strong{display:block;font-size:18px;margin:2px 0 4px;font-family:Georgia,serif;font-weight:400}.ex-step p{margin:0 0 10px;color:#55604d}
+.ex-step-num{float:left;margin:0 10px 4px 0;border:2px solid #23213a;border-radius:10px;width:40px;height:40px;display:grid;place-items:center;font-family:Georgia,serif;font-size:18px}
+.ex-step-actions{display:flex;flex-wrap:wrap;gap:6px;clear:both}.ex-step-actions button{border:1px solid #cfc7b5;background:#fff;border-radius:9px;padding:8px 11px;font-size:11px;cursor:pointer}.ex-step-actions .ex-primary{background:#2f4a3c;color:#fff;border-color:#2f4a3c}
+.ex-steps{margin:10px 0 0;padding-left:18px;font-size:11px;color:#6a7360}.ex-steps .done{color:#2f7d4f;text-decoration:line-through}.ex-steps .now{color:#23332b;font-weight:700}
+.ex-final{margin:0 0 10px;display:grid;gap:6px}
+@media(max-width:950px){.explorer{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}.ex-side{max-height:34vh}.ex-step{right:12px;left:12px;width:auto;bottom:12px}.ex-legend{display:none}}
+
+/* QA fixes: keep the floor picker reachable above the step card on smaller screens. */
+@media(max-width:950px){
+  .ex-floors{top:12px;right:12px;transform:none;flex-direction:row;flex-wrap:wrap;max-width:calc(100% - 24px)}
+  .ex-floors button{min-width:40px}
+  .ex-step{max-height:45%;overflow:auto}
+  .explorer{grid-template-rows:auto minmax(120px,30vh) minmax(300px,1fr)}
+}
