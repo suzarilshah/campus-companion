@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LiveSession } from '../domain/live';
 import { REGISTRATION_URL, type AttendeeClient, type Reason } from '../domain/attendeeClient';
 import { clashes, describeFailure } from '../domain/planning';
@@ -18,8 +18,12 @@ export function useTray() {
     try { const raw = JSON.parse(sessionStorage.getItem(TRAY_KEY) ?? '[]'); return Array.isArray(raw) ? raw.filter((id) => typeof id === 'string').slice(0, 10) : []; } catch { return []; }
   });
   useEffect(() => { try { sessionStorage.setItem(TRAY_KEY, JSON.stringify(tray)); } catch { /* Storage can be unavailable. */ } }, [tray]);
+  // Bumped by `book` so the tray opens its review step; nothing is reserved until the attendee confirms there.
+  const [reviewRequest, setReviewRequest] = useState(0);
   return {
-    tray,
+    tray, reviewRequest,
+    /** Add several sessions (e.g. AI picks) at once, up to the API's 10, and ask the tray to open its review. */
+    book: (ids: string[]) => { setTray((items) => [...items, ...ids.filter((id) => !items.includes(id))].slice(0, 10)); setReviewRequest((count) => count + 1); },
     has: (id: string) => tray.includes(id),
     toggle: (id: string) => setTray((items) => items.includes(id) ? items.filter((item) => item !== id) : items.length >= 10 ? items : [...items, id]),
     remove: (ids: string[]) => setTray((items) => items.filter((item) => !ids.includes(item))),
@@ -80,6 +84,9 @@ export function SessionActions({ session, client, tray }: { session: LiveSession
 /** Review up to ten sessions, see local clash hints, confirm once, then see per-session results from GetSchedule. */
 export function ReservationTray({ client, tray, compact = false }: { client: AttendeeClient; tray: Tray; compact?: boolean }) {
   const [reviewing, setReviewing] = useState(false);
+  const section = useRef<HTMLElement>(null);
+  // "Reserve all of these" from the AI panel: open the confirm step and bring it into view.
+  useEffect(() => { if (tray.reviewRequest) { setReviewing(true); section.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }); } }, [tray.reviewRequest]);
   const sessions = client.catalog?.sessions ?? [];
   const byId = new Map(sessions.map((session) => [session.id, session]));
   const items = tray.tray.map((id) => byId.get(id)).filter((session): session is LiveSession => Boolean(session));
@@ -92,7 +99,7 @@ export function ReservationTray({ client, tray, compact = false }: { client: Att
     setReviewing(false);
     if (results) tray.remove(results.filter((result) => result.reserved).map((result) => result.id));
   }
-  return <section className={`bk-tray ${compact ? 'bk-compact' : ''}`} aria-label="Reservation tray">
+  return <section ref={section} className={`bk-tray ${compact ? 'bk-compact' : ''}`} aria-label="Reservation tray">
     <header><strong>Reservation tray · {items.length}/10</strong>{items.length ? <button className="bk-link" onClick={() => { tray.clear(); setReviewing(false); }}>Clear</button> : null}</header>
     {notice ? <p className="bk-note">{notice}</p> : null}
     <ul>{items.map((session) => {

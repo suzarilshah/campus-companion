@@ -357,3 +357,38 @@ test('the Strip guide shows grounded answers with walk-to buttons and explains l
   await expect(guide.getByText(/wait a little/)).toBeVisible();
   expect(calls).toBe(3);
 });
+
+test('"Reserve all of these" puts AI picks in the tray and books them only after one explicit confirm', async ({ page }) => {
+  const sessions = [
+    { id: 'g1', title: 'Synthetic agents workshop', venue: 'Wynn', date: '2026-12-01', time: '13:00', minutes: '60', availability: 'available', reservable: true, topics: ['Generative AI'], tracks: [], speakers: [] },
+    { id: 'g2', title: 'Synthetic vector search intro', venue: 'The Venetian', date: '2026-12-01', time: '10:00', minutes: '60', availability: 'limited', reservable: true, topics: ['Generative AI'], tracks: [], speakers: [] },
+    { id: 'w1', title: 'Synthetic walk-up chalk talk', venue: 'Wynn', date: '2026-12-01', time: '15:00', minutes: '60', availability: 'walkUp', reservable: false, topics: ['Generative AI'], tracks: [], speakers: [] },
+  ];
+  let schedule = { favorites: [] as string[], reserved: [] as string[], personalTime: [] };
+  const reserveCalls: unknown[] = [];
+  await page.route('**/api/attendee/**', async (route) => {
+    const path = new URL(route.request().url()).pathname.replace('/api/attendee/', '');
+    if (path === 'session') return route.fulfill({ json: { connected: true, csrf: 'synthetic-csrf' } });
+    if (path === 'catalog') return route.fulfill({ json: { sessions, expectedCount: 3, refreshedAt: '2026-11-07T00:00:00Z', eventName: 'Synthetic fixture event' } });
+    if (path === 'schedule') return route.fulfill({ json: schedule });
+    if (path === 'reserve') {
+      const body = route.request().postDataJSON(); reserveCalls.push(body);
+      schedule = { ...schedule, reserved: body.ids };
+      return route.fulfill({ json: { schedule, results: body.ids.map((id: string) => ({ id, reserved: true })), message: 'Reserved and confirmed with GetSchedule.' } });
+    }
+    throw new Error(`Unexpected local endpoint: ${path}`);
+  });
+  await page.route('**/api/ai/ask', (route) => route.fulfill({ json: { mode: 'concierge', picks: [{ id: 'g1', reason: 'Hands-on.' }, { id: 'g2', reason: 'Beginner friendly.' }, { id: 'w1', reason: 'Walk-up option.' }], fallback: false, provider: 'Synthetic model', shortlisted: 3, dropped: 0 } }));
+  await page.goto('/?connection=ready');
+  const panel = page.getByRole('region', { name: 'Plan my day with AI' });
+  await panel.getByRole('textbox').fill('generative ai');
+  await panel.getByRole('button', { name: 'Suggest sessions' }).click();
+  await panel.getByRole('button', { name: '⚡ Reserve all 2 of these' }).click();
+  const tray = page.getByRole('region', { name: 'Reservation tray' }).first();
+  await expect(tray).toContainText('Synthetic agents workshop');
+  await expect(tray).not.toContainText('walk-up');
+  expect(reserveCalls).toHaveLength(0);
+  await tray.getByRole('button', { name: 'Confirm 2 reservations' }).click();
+  await expect(tray.getByRole('status', { name: 'Reservation results' })).toContainText('✓ Synthetic agents workshop');
+  expect(reserveCalls).toEqual([{ ids: ['g1', 'g2'], confirmed: true }]);
+});

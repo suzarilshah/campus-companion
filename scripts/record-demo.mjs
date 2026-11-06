@@ -95,4 +95,41 @@ await clip('06-strip-guide-live', async (page) => {
   await guide.getByRole('button', { name: 'Ask' }).click();
   await guide.locator('.guide-a').nth(1).waitFor({ timeout: 20000 }); await pause(page, 3000);
 }, true);
+// Gameplay on the live site: real hosted EXP (browser-local), real pop-ups, no stubs.
+await clip('07-gameplay', async (page) => {
+  await page.goto(`${process.argv[3] ?? 'https://campus-companion-blond.vercel.app'}/map`);
+  await page.waitForFunction(() => Number(document.querySelector('canvas')?.dataset.calls ?? 0) > 0, null, { timeout: 120000 });
+  await pause(page, 2500);
+  await page.getByRole('button', { name: /Street view/ }).click(); await pause(page, 1800);
+  const canvas = page.locator('canvas').first(); await canvas.hover();
+  for (const [key, ms, run] of [['w', 1400, false], ['d', 500, false], ['w', 1300, true], ['a', 600, false], ['s', 700, false]]) {
+    if (run) await page.keyboard.down('Shift');
+    await page.keyboard.down(key); await pause(page, ms); await page.keyboard.up(key);
+    if (run) await page.keyboard.up('Shift');
+  }
+  await pause(page, 600);
+  // Walk to the Venetian shuttle stop (a discovery), then ride the shuttle south to MGM Grand.
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('campus-goto', { detail: { x: 2.35, z: -2.6 } })));
+  await page.getByRole('group', { name: 'Ride the illustrative shuttle to' }).waitFor({ timeout: 30000 }); await pause(page, 1800);
+  await page.getByRole('group', { name: 'Ride the illustrative shuttle to' }).getByRole('button', { name: 'MGM Grand' }).click();
+  await pause(page, 9000);
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('campus-visit', { detail: 'mgm' }))); await pause(page, 7000);
+  await page.getByRole('button', { name: /open passport/ }).click(); await pause(page, 3500);
+}, true);
+// AI books seats: AI picks -> "Reserve all" -> one confirm -> results (labelled demo data, synthetic reserve response).
+await clip('08-ai-booking', async (page) => {
+  let reserved = [];
+  await page.route('**/api/attendee/reserve', (route) => {
+    reserved = route.request().postDataJSON().ids;
+    const progress = { exp: 160, level: { level: 2, title: 'Wanderer', floor: 100, next: 250, progress: 0.4 }, discovered: [], quests: [], recent: [{ key: 'reserve:demo', exp: 30, label: 'Reservation confirmed' }, { key: 'quest:booked', exp: 60, label: 'Quest complete: Seat secured' }], storage: 'demo' };
+    return route.fulfill({ json: { schedule: { favorites: [], reserved, personalTime: [] }, results: reserved.map((id) => ({ id, reserved: true })), message: 'Reserved and confirmed with GetSchedule.', progress } });
+  });
+  await page.goto(`${base}/?connection=ready`);
+  const panel = page.getByRole('region', { name: 'Plan my day with AI' });
+  await panel.scrollIntoViewIfNeeded(); await pause(page, 1000);
+  await panel.getByRole('textbox').pressSequentially('Beginner generative AI on Dec 1, book me in!', { delay: 40 });
+  await panel.getByRole('button', { name: 'Suggest sessions' }).click(); await pause(page, 2500);
+  await panel.getByRole('button', { name: /Reserve all/ }).click(); await pause(page, 2200);
+  await page.getByRole('button', { name: /^Confirm \d+ reservation/ }).first().click(); await pause(page, 4500);
+});
 console.log((await readdir(out)).filter((file) => file.endsWith('.webm')));

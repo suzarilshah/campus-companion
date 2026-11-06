@@ -2,7 +2,7 @@
 
 Walk a tiny-planet Las Vegas Strip, collect stamps in your event passport, and plan your real re:Invent 2026 week with the AWS Events API.
 
-**▶ 90-second demo:** https://youtu.be/8ol0_fhre70
+**▶ 70-second demo:** https://youtu.be/IYVP6AvUbF8
 
 - **Hosted preview:** [campus-companion-blond.vercel.app](https://campus-companion-blond.vercel.app). It shows the globe, exploration, the passport and the AI Strip guide, with EXP saved in your browser. It has no sign-in and no sessions.
 - **Full app (local):** run it on your own computer (below) to sign in with your registered AWS Builder ID. Then you can browse the real catalog, favorite sessions, reserve seats, and turn reservations into passport stamps.

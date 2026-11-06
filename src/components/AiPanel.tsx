@@ -41,6 +41,12 @@ export function AiPanel({ client, tray, mode, venueId, days = [], compact = fals
     {answer ? <div className="ai-results">
       <p className="ai-meta">{answer.fallback ? 'Keyword matches' : `Suggested by ${answer.provider}`} · from {answer.shortlisted} shortlisted session{answer.shortlisted === 1 ? '' : 's'}{answer.dropped ? ` · ${answer.dropped} unverifiable suggestion${answer.dropped === 1 ? '' : 's'} removed` : ''}</p>
       {answer.note ? <p className="ai-note">{answer.note}</p> : null}
+      {(() => {
+        // One tap to put every bookable pick in the tray and open the confirm step (the AI never reserves by itself).
+        const bookable = answer.picks.flatMap((pick) => { const session = byId.get(pick.id); return session ? [session] : []; })
+          .filter((session) => session.reservable !== false && session.availability !== 'walkUp' && session.availability !== 'unavailable' && !client.schedule?.reserved.includes(session.id));
+        return bookable.length ? <div className="ai-book"><button type="button" className="ai-book-button" onClick={() => tray.book(bookable.map((session) => session.id))}>⚡ Reserve all {bookable.length} of these</button><small>Puts them in your reservation tray and opens the confirm step. Nothing is booked until you confirm.</small></div> : null;
+      })()}
       <ol>{answer.picks.map((pick) => { const session = byId.get(pick.id); if (!session) return null; return <li key={pick.id}>
         <small>{pick.gap ? `Free ${pick.gap} · ` : ''}{session.date ?? 'Date not provided'} · {session.allDay ? 'All day' : session.time ?? 'Time not provided'} · {session.venue ?? 'Venue not provided'}</small>
         <strong>{session.title}</strong>
