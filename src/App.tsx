@@ -19,7 +19,7 @@ function Shell({ current, children }: { current: '/' | '/passport'; children: Re
   return <>
     <a className="skip-link" href="#content">Skip to content</a>
     <SiteHeader current={current} />
-    <aside className="sample-banner" aria-label="Data notice"><strong>Real event data only</strong><span>{HOSTED ? 'Hosted preview: no sign-in and no sessions here. Real AWS Events API data appears only in the local app.' : 'Sessions come from the AWS Events API after you sign in with your registered Builder ID. Nothing here is invented.'}</span></aside>
+    <aside className="sample-banner" aria-label="Data notice"><strong>{HOSTED ? 'Hosted preview' : 'Real event data only'}</strong><span>{HOSTED ? 'Hosted preview: no sign-in and no sessions here. Real AWS Events API data appears only in the local app.' : 'Sessions come from the AWS Events API after you sign in with your registered Builder ID. Nothing here is invented.'}</span></aside>
     <main id="content" tabIndex={-1}>{children}</main>
     <SiteFooter />
   </>;

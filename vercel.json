@@ -4,7 +4,6 @@
   "installCommand": "npm ci",
   "buildCommand": "VITE_HOSTED=1 npx vite build",
   "outputDirectory": "dist",
-  "cleanUrls": true,
   "rewrites": [
     { "source": "/map", "destination": "/index.html" },
     { "source": "/passport", "destination": "/index.html" }

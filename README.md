@@ -2,7 +2,7 @@
 
 Walk a tiny-planet Las Vegas Strip, collect stamps in your event passport, and plan your real re:Invent 2026 week with the AWS Events API.
 
-- **Hosted preview:** HOSTED_URL_PLACEHOLDER. It shows the globe, exploration and the passport only, with EXP saved in your browser. It has no sign-in and no sessions.
+- **Hosted preview:** [campus-companion-blond.vercel.app](https://campus-companion-blond.vercel.app). It shows the globe, exploration and the passport only, with EXP saved in your browser. It has no sign-in and no sessions.
 - **Full app (local):** run it on your own computer (below) to sign in with your registered AWS Builder ID. Then you can browse the real catalog, favorite sessions, reserve seats, and turn reservations into passport stamps.
 
 **Why local?** AWS attendee sign-in only redirects back to an app on the attendee's own computer (loopback callback ports 8484–8489). The hosted site therefore never handles AWS tokens or attendee data.
