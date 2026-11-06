@@ -2,6 +2,14 @@
 
 This is the lightweight iteration log required by [the engineering loop](engineering-loop.md). Add an entry after each meaningful implementation/verification cycle, without secrets or personally identifying attendee information. Keep the newest entry at the top.
 
+## 2026-11-07 — real AI wired to Kimi K2.5 on Bedrock
+
+- Sign-in: AWS CLI 2.39.5 installed to `~/.local/aws-cli` (signed and notarised pkg, user-level). Ran `aws login --profile campus-companion`; the participant's active console session (root) was used in Chrome.
+- Found no SageMaker endpoints in any of the 18 enabled regions. Bedrock offers `moonshotai.kimi-k2.5` on demand in us-east-1, and a test Converse call succeeded.
+- The app's `AiService` called live for all four modes: concierge about 2.1 s, guide about 9.6 s, gaps about 3.9 s, TL;DR about 4.7 s, with no fallbacks and 0 dropped IDs. The injected abstract was summarised without obeying it.
+- The playbook, executed against Bedrock Kimi, passed 6/6 red-team cases (0 rejected, about 0.7–2 s per call). The `aws login` profile needs `botocore[crt]` in Python, which is documented in the notebook.
+- Incident: `brew uninstall awscli` (a broken Homebrew build) auto-removed orphaned formulae, including Homebrew `node` 25.2.1. Reinstalled `node` 26.13.0; the full suite passes on it (41 unit, 27 Chromium). Other auto-removed dependency formulae could not be listed afterwards.
+
 ## 2026-11-07 — secure AI features, SageMaker playbook, demo video kit (participant request, D-34)
 
 - MIT license added (GitHub detects MIT).

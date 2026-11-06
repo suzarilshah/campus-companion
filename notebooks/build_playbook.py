@@ -21,7 +21,7 @@ This playbook covers:
 
 Runs in SageMaker Studio (Python 3 kernel) or any local Jupyter."""))
 
-cells.append(md("## 0 · Configuration\nSet these as environment variables or edit the cell. Leave `AI_PROVIDER` empty for the offline demo. Credentials come from the notebook's execution role (SageMaker) or the standard AWS profile chain. **Never paste keys into the notebook.**"))
+cells.append(md("## 0 · Configuration\nInstall once: `pip install boto3 \"botocore[crt]\"` (the `crt` extra lets boto3 use `aws login` console sign-in; SageMaker Studio roles don't need it). Set these as environment variables or edit the cell. Leave `AI_PROVIDER` empty for the offline demo. Credentials come from the notebook's execution role (SageMaker) or the standard AWS profile chain. **Never paste keys into the notebook.**"))
 cells.append(code("""import os, json, re, time
 from pathlib import Path
 

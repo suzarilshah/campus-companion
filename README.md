@@ -97,7 +97,13 @@ How they stay safe ([full design](docs/ai-plan.md)):
 - **You stay in control.** Suggestions only fill the existing reservation tray or favorite review. Nothing is booked without your confirmation and a GetSchedule check.
 - **Limited.** The local server only accepts AI requests from this app's own page (anti-forgery check). They are limited to 10 per minute with a 20-second timeout and 600 output tokens, and fall back to labelled keyword matches if the model is off or fails.
 
-Configure **Amazon Bedrock** (Converse, optional Guardrail) or an **Amazon SageMaker** real-time endpoint in `.env` (see `.env.example`). With nothing configured, AI stays off.
+Configure **Amazon Bedrock** (Converse, optional Guardrail) or an **Amazon SageMaker** real-time endpoint in `.env.local` (see `.env.example`). With nothing configured, AI stays off. The tested setup is **Kimi K2.5 on Amazon Bedrock** (`moonshotai.kimi-k2.5`, us-east-1):
+
+```sh
+aws login --profile campus-companion --region us-east-1   # AWS CLI 2.32+; approve in the browser, no keys to copy
+```
+
+Then add `AI_PROVIDER=bedrock`, `BEDROCK_MODEL_ID=moonshotai.kimi-k2.5`, `AI_AWS_PROFILE=campus-companion` and `AI_AWS_REGION=us-east-1` to `.env.local`, and restart `npm start`. The startup line shows `AI: Amazon Bedrock · …`. `scripts/aws-signin.sh` is a guided alternative for IAM Identity Center (SSO) users.
 
 ## SageMaker / Jupyter playbook
 
