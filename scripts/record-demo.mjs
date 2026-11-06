@@ -43,11 +43,12 @@ async function stub(page) {
   });
 }
 
-async function clip(name, run) {
+async function clip(name, run, live = false) {
+  if (process.env.CLIPS && !process.env.CLIPS.split(',').some((prefix) => name.startsWith(prefix))) return; // e.g. CLIPS=05,06
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, recordVideo: { dir: out, size: { width: 1280, height: 720 } } });
   const page = await context.newPage();
-  await stub(page);
+  if (live) await page.addInitScript(() => localStorage.setItem('campus-hint-seen', '1')); else await stub(page);
   try { await run(page); } catch (error) { console.error(`${name}: ${error.message}`); }
   const video = page.video();
   await context.close(); await browser.close();
@@ -76,5 +77,22 @@ await clip('04-building-guide', async (page) => {
   await guide.getByRole('textbox').pressSequentially('Anything hands-on here?', { delay: 45 });
   await guide.getByRole('button', { name: 'Ask' }).click(); await pause(page, 3500);
 });
-await clip('05-passport', async (page) => { await page.goto(`${base}/passport`); await pause(page, 2000); await page.mouse.wheel(0, 420); await pause(page, 2500); await page.mouse.wheel(0, 600); await pause(page, 2000); });
+await clip('05-passport', async (page) => {
+  // Hosted passport with a few stamps pre-collected (same award keys the globe grants) so the stamps are visible.
+  await page.addInitScript(() => { const at = new Date().toISOString(); localStorage.setItem('campus-hosted-progress', JSON.stringify({ 'discover:venue-venetian': { exp: 50, at }, 'discover:venue-wynn': { exp: 50, at }, 'discover:venue-encore': { exp: 50, at }, 'discover:venue-forum': { exp: 50, at }, 'discover:landmark-replay': { exp: 40, at }, 'quest:replay-scout': { exp: 30, at }, 'quest:badge-ready': { exp: 30, at } })); });
+  await page.goto(`${process.argv[3] ?? 'https://campus-companion-blond.vercel.app'}/passport`); await pause(page, 2000); await page.mouse.wheel(0, 420); await pause(page, 3000); await page.mouse.wheel(0, 600); await pause(page, 2500);
+}, true);
+// Real hosted Strip guide (production, real Kimi K2.5 answers; uses 2 of the visitor quota).
+const hosted = process.argv[3] ?? 'https://campus-companion-blond.vercel.app';
+await clip('06-strip-guide-live', async (page) => {
+  await page.goto(`${hosted}/map`); await pause(page, 9000);
+  const guide = page.getByRole('region', { name: 'Ask the Strip guide' });
+  await guide.scrollIntoViewIfNeeded(); await pause(page, 800);
+  await guide.getByRole('textbox').pressSequentially('Where can I pick up my badge?', { delay: 45 });
+  await guide.getByRole('button', { name: 'Ask' }).click();
+  await guide.locator('.guide-a').first().waitFor({ timeout: 20000 }); await pause(page, 2500);
+  await guide.getByRole('textbox').pressSequentially('Write me a poem about cats', { delay: 45 });
+  await guide.getByRole('button', { name: 'Ask' }).click();
+  await guide.locator('.guide-a').nth(1).waitFor({ timeout: 20000 }); await pause(page, 3000);
+}, true);
 console.log((await readdir(out)).filter((file) => file.endsWith('.webm')));

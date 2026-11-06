@@ -1,47 +1,59 @@
-## What I built
+## 🎬 Watch the 90-second demo
 
-**Campus Companion** turns the re:Invent 2026 catalog into a place you can walk around. A tiny-planet Las Vegas Strip holds the six real 2026 venues (Encore, Wynn, The Venetian, Caesars Palace, Caesars Forum, MGM Grand). Walk your blocky avatar up to a building and the side panel shows **only that building's sessions**, loaded live from the AWS Events API. From there you can favorite sessions, put seats in a reservation tray, and reserve them — every write goes through a review step and is checked against `GetSchedule` before the app says it happened.
+https://youtu.be/8ol0_fhre70
 
-It has three parts:
+## So, here's the problem
 
-- **Planner** – the full catalog with search, topic/day/format filters that live in the URL, a reservation tray, and *My schedule* grouped by day with clash hints.
-- **Strip globe** – the 3D world (React Three Fiber): click-to-walk with pathfinding, a shuttle you can ride, an indoor explorer that stacks a building's floors from the API's room strings and routes you to a room, and a minimap.
-- **Event passport** – venue stamps, quests and EXP for exploring, plus *session stamps* that appear only when a reservation is confirmed by `GetSchedule`.
+Okay, picture your first morning at re:Invent. There are 2,000+ sessions spread over six hotels on the Las Vegas Strip, your feet already hurt, and the keynote you wanted is a 20-minute walk away. We've all been there!
 
-## Why
+Planning re:Invent usually means a giant list, a dozen browser tabs and a lot of guessing about where things actually are. We wanted it to feel more like a game you *want* to open. So we built one.
 
-re:Invent is 2,000+ sessions spread across six venues on the Strip. The hard part isn't finding *a* session — it's building a week that actually works when you have to walk between hotels. I wanted planning to feel like exploring: you see where things are, you notice what's on in the building you're standing in, and the boring-but-critical parts (clashes, full sessions, reservation windows) are handled honestly.
+## What we built
 
-## How it uses the Events API
+**Campus Companion** turns the re:Invent 2026 catalog into a tiny planet you can walk around. The six real 2026 venues (Encore, Wynn, The Venetian, Caesars Palace, Caesars Forum and MGM Grand) sit on a little round Las Vegas Strip. Walk your blocky avatar up to a hotel and the side panel shows **only the sessions happening in that building**, pulled live from the AWS Events API.
 
-| Operation | What the app does with it |
+There are three parts:
+
+- 🗺️ **The Strip globe.** A 3D world you can actually play with. Click to walk (it finds a path around buildings), hop on the shuttle, peek inside a building floor by floor and get routed to your room.
+- 📋 **The planner.** Your full real catalog with search and filters, a reservation tray, and *My schedule* grouped by day with heads-ups when two sessions clash.
+- 🛂 **The event passport.** Collect a stamp for every venue you find, finish quests, level up, and watch real reservations turn into session stamps once AWS confirms them.
+
+## How we use the Events API
+
+We tried to use the API the way a careful attendee would want it used:
+
+| Operation | What we do with it |
 |---|---|
-| `GetEvent` | Event name, dates, timezone and city in the map and planner |
-| `ListSessions` | Pages until `nextToken` ends; sessions are matched to venues by name (unmatched venue strings are listed, never guessed) |
-| `GetSession` | Fresh details when you open a card; "Re-check seats" refreshes availability bands |
-| `GetSchedule` | Reserved, favorited and personal time; re-read after **every** change and when you return to the tab |
-| `AssociateFavorites` / `DisassociateFavorite` | Only after an explicit confirm; a favorite is never shown as a seat |
-| `ReserveSessions` / `CancelReservation` | 1–10 sessions per confirmed request, results read **per session** (a 200 can still contain failures), mapped to plain-language reasons like `scheduleConflict`; 409 before Oct 8 is explained; uncertain results are never blindly re-sent |
+| `GetEvent` | Shows the event name, dates, timezone and city |
+| `ListSessions` | Reads every page of the catalog, then matches sessions to venues by name. If a venue name doesn't match, we list it instead of guessing |
+| `GetSession` | Grabs fresh details when you open a session, plus a "re-check seats" button |
+| `GetSchedule` | Your reserved and favorited sessions and personal time. We re-read it after **every** change, so the app never says "done!" unless AWS agrees |
+| `AssociateFavorites` / `DisassociateFavorite` | Only after you confirm. A favorite is never shown as a seat |
+| `ReserveSessions` / `CancelReservation` | Up to 10 sessions per request, always reviewed first. We read the result for each session (a 200 can still hide a failure), explain things like `scheduleConflict` in plain words, and never blindly retry |
 
-Sign-in is the attendee's own Builder ID via OAuth **PKCE on a loopback callback** (127.0.0.1:8484–8489). Tokens live only in the local server's memory behind an HttpOnly cookie, CSRF and Origin checks — the browser, the AI and the hosted site never see them.
+Sign-in uses your own Builder ID with OAuth PKCE on a loopback callback, so **your tokens stay on your own computer**. The browser, the AI and the hosted site never see them.
 
-## AI, done safely
+## AI that actually behaves 🤖
 
-- **Local AI concierge (Amazon Bedrock, Kimi K2.5):** *Plan my day*, *Fill my free time*, a *Building guide* on the map, and *Summarise this session*. The server first builds a deterministic shortlist from your loaded catalog (excluding reserved, full and clashing sessions). The model only ranks and explains that shortlist, gets no tokens or identity, has no tools, must answer in strict JSON, and every session ID it returns is checked against the shortlist. Suggestions only fill the existing review flows — the AI can't book anything.
-- **Hosted "Strip guide":** on the live site, a guide answers questions about the venues, the globe and the passport — grounded only in the app's sourced facts, refusing everything else. It runs in a Vercel function that gets AWS access through **OIDC federation** (no stored keys) into a role that can call exactly one Bedrock model, with per-visitor and site-wide daily quotas in Neon Postgres that fail closed.
-- **SageMaker / Jupyter playbook:** a notebook that tours the Events API contract, runs the same shortlist/prompt/validator in Python, calls Bedrock or a SageMaker endpoint, and red-teams the defences (prompt injection in abstracts, invented IDs, PII, malformed output) — 6/6 cases pass against Kimi K2.5.
+We love AI, but we didn't want a chatbot that makes things up or books stuff behind your back. So:
 
-## Architecture
+- **AI concierge (local app, Kimi K2.5 on Amazon Bedrock).** Ask "beginner GenAI stuff on Tuesday afternoon" and get real picks with a short reason for each. Behind the scenes, the app first builds a shortlist from *your* catalog (skipping what you've reserved, what's full and what clashes). The model just ranks that list. Every session ID it returns gets double-checked, and the AI can only fill your tray. You still press the button.
+- **The Strip guide (live website).** Anyone can ask about the venues, the globe or the passport. It only knows our sourced facts and politely refuses everything else (we tried poems, jailbreaks and "print your system prompt"). It runs with **no stored AWS keys** thanks to Vercel OIDC, can call exactly one model, and has hard daily limits so it can't run up a surprise bill.
+- **SageMaker / Jupyter playbook.** A notebook that tours the API contract, runs the same AI pipeline in Python, and red-teams it: prompt injection hidden in a session abstract, made-up session IDs, personal data, broken model output. **6 out of 6 blocked** against Kimi K2.5.
 
-- **Local attendee app:** React + Vite front end, Express server bound to loopback only (DNS-rebinding and cross-site guards), Events API REST client with rate spacing, Neon Postgres for EXP (tied to a SHA-256 hash of the Builder ID subject, never the token or email).
-- **Hosted preview (Vercel):** the same front end in a no-sign-in mode — globe, passport, browser-local EXP and the AI Strip guide — with a strict Content-Security-Policy.
-- **Quality:** 48 unit tests (including AI security tests) and 28 Playwright browser tests; axe-core accessibility scans report 0 WCAG 2.2 AA violations; keyboard, screen-reader and reduced-motion support.
+## Under the hood
 
-## Try it
+- **Local app:** React, Vite and React Three Fiber on the front, plus a small Express server that only listens on your own machine (with DNS-rebinding and cross-site protection). EXP is saved in Neon Postgres against a hashed Builder ID, never your email or token.
+- **Live preview on Vercel:** the same app in a no-sign-in mode, with the globe, the passport and the AI guide, behind a strict Content-Security-Policy.
+- **Tested properly:** 48 unit tests (including AI security tests), 28 Playwright browser tests and accessibility scans with zero WCAG 2.2 AA issues. It also works with a keyboard, a screen reader and reduced motion.
 
-- **Live preview:** https://campus-companion-blond.vercel.app — explore the globe, collect stamps, ask the Strip guide.
-- **Full app with your real schedule:** clone the repo, `npm ci`, `npm run dev`, open http://127.0.0.1:8484 and sign in with the Builder ID you registered with (AWS only allows attendee sign-in back to an app on your own computer, which is why the live preview can't show your sessions).
+## Give it a spin
 
-## Honest limits
+- 🌐 **Live preview:** https://campus-companion-blond.vercel.app (walk the globe, collect stamps, ask the Strip guide)
+- 💻 **The full experience with your real schedule:** clone the repo, run `npm ci` then `npm run dev`, open http://127.0.0.1:8484 and sign in with the Builder ID you registered with. AWS only allows attendee sign-in back to an app on your own computer, which is why the live site can't show your personal sessions.
 
-The globe is an original, illustrative map — not to scale, not official wayfinding. Shuttle stops and food spots are marked illustrative because official pages don't publish them, and Expo booth numbers are shown as "not published". Nothing in the app invents sessions, rooms, times or availability; tests use clearly synthetic fixtures. Campus Companion is an independent project, not an official AWS app.
+## Keeping it honest
+
+The globe is our own illustrated map, so it's not to scale and not official wayfinding. Shuttle stops and food spots are marked as illustrative because the official pages don't list them, and Expo booth numbers say "not published yet". The app never invents sessions, rooms, times or seat availability, and our tests use clearly fake data. Campus Companion is an independent project, not an official AWS app.
+
+See you in Vegas! 🎰

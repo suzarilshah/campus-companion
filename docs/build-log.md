@@ -2,6 +2,13 @@
 
 This is the lightweight iteration log required by [the engineering loop](engineering-loop.md). Add an entry after each meaningful implementation/verification cycle, without secrets or personally identifying attendee information. Keep the newest entry at the top.
 
+## 2026-11-07 — verification pass, demo video, Builder Center draft
+
+- Fixed: `scripts/build-vercel.mjs` wrote the hosted build into `dist/`, which the local app serves, so a local run silently switched the local app to hosted mode. It now builds into `.vercel/hosted-dist`.
+- Demo video (90 s, 720p): fresh Playwright clips (synthetic data badged; the live Strip guide clip uses real Kimi answers), narration by Amazon Polly (Matthew, generative), an original synthesised music track ducked about 13 dB under the voice, loudness normalised to -14 LUFS. Uploaded unlisted: https://youtu.be/8ol0_fhre70. The passport clip uses pre-seeded hosted EXP so the stamps are visible.
+- Builder Center draft rewritten in a casual voice, no em or en dashes, video at the top (`docs/builder-center-post.md`). Not published.
+- AWS: guide access restored (`setup-guide-aws.sh`); AWS Budget `campus-companion-monthly-50usd` with email alerts at 80% actual, 100% forecast and 100% actual. The automatic brake (`setup-budget-brake.sh`) awaits the participant.
+
 ## 2026-11-07 — live AI Strip guide on Vercel (participant request, D-36)
 
 - Built `src/domain/guide.ts` (fact pack from the sourced venues and places, strict JSON parse, refusal), `server/guide.ts` (quotas, Neon counters, cache, fail-closed), `server/vercel-guide.ts` (origin, method, JSON and size checks; OIDC to STS), `scripts/build-vercel.mjs` (Build Output API: static site plus a bundled function, CSP/HSTS), and `GuideChat` on the globe and the hosted planner.

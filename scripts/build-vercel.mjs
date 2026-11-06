@@ -6,8 +6,9 @@ import { build } from 'esbuild';
 
 const out = '.vercel/output';
 rmSync(out, { recursive: true, force: true });
-execFileSync('npx', ['vite', 'build'], { stdio: 'inherit', env: { ...process.env, VITE_HOSTED: '1' } });
-cpSync('dist', `${out}/static`, { recursive: true });
+// Separate outDir so a local run never replaces the local app's dist/ with the hosted build.
+execFileSync('npx', ['vite', 'build', '--outDir', '.vercel/hosted-dist', '--emptyOutDir'], { stdio: 'inherit', env: { ...process.env, VITE_HOSTED: '1' } });
+cpSync('.vercel/hosted-dist', `${out}/static`, { recursive: true });
 
 const fn = `${out}/functions/api/guide.func`;
 mkdirSync(fn, { recursive: true });
